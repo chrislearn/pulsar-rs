@@ -1119,6 +1119,7 @@ impl<Exe: Executor> ConsumerBuilder<Exe> {
             return Err(Error::Custom("Cannot create consumer with no topics and no topic regex".into()));
         }
 
+        println!("======consumer build  0");
         let topics: Vec<(String, BrokerAddress)> = try_join_all(
             topics
                 .into_iter()
@@ -1135,6 +1136,7 @@ impl<Exe: Executor> ConsumerBuilder<Exe> {
                 "Unable to create consumer - topic not found"
             )));
         }
+        println!("======consumer build  1");
 
         let consumer_id = match (consumer_id, topics.len()) {
             (Some(consumer_id), 1) => Some(consumer_id),
@@ -1171,12 +1173,14 @@ impl<Exe: Executor> ConsumerBuilder<Exe> {
             dead_letter_policy
         };
 
+        println!("======consumer build  2");
         let consumers =
             try_join_all(topics.into_iter().map(|(topic, addr)| {
                 TopicConsumer::new(pulsar.clone(), topic, addr, config.clone())
             }))
             .await?;
 
+        println!("======consumer build  3");
         let consumer = if consumers.len() == 1 {
             let consumer = consumers.into_iter().next().unwrap();
             InnerConsumer::Single(consumer)
@@ -1202,10 +1206,12 @@ impl<Exe: Executor> ConsumerBuilder<Exe> {
             };
             if consumer.topic_regex.is_some() {
                 consumer.update_topics();
+                println!("======consumer build  4");
                 let initial_consumers = consumer.new_consumers
                     .take()
                     .unwrap()
                     .await?;
+                println!("======consumer build  5");
                 consumer.add_consumers(initial_consumers);
             }
             InnerConsumer::Mulit(consumer)
